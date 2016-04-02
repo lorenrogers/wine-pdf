@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'methadone'
+require 'wine/pdf.rb'
+
+class App
+  include Methadone::Main
+  include Methadone::CLILogging
+
+  main do |pdf_file|
+    username = `whoami`.chomp!
+    command = '"c:\\\\Program Files\\\\Tracker Software\\\\PDF Editor\\\\PDFXEdit.exe"'
+    pdf_unix_path = File.absolute_path pdf_file
+    pdf_wine_path = pdf_unix_path.gsub(
+      "/home/#{username}/",
+      "c:/users/#{username}/My Documents/")
+    pdf_wine_path.gsub! '/', '\\\\'
+    `wine #{command} \"#{pdf_wine_path}\"`
+    #puts "wine #{command} \"#{pdf_wine_path}\""
+  end
+
+  description "Open PDF files in Wine."
+  arg :pdf_file, 'Path to the PDF file'
+  version Wine::Pdf::VERSION
+  use_log_level_option :toggle_debug_on_signal => 'USR1'
+
+  go!
+end
